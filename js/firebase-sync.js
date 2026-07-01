@@ -177,9 +177,7 @@ async function importFromKeeper() {
 // =====================
 // BUTTON WIRING
 // =====================
-document.addEventListener('DOMContentLoaded', function () {
-  const btn = document.getElementById('importFromKeeper');
-  if (btn) {
-    btn.addEventListener('click', importFromKeeper);
-  }
-});
+const btn = document.getElementById('importFromKeeper');
+if (btn) {
+  btn.addEventListener('click', importFromKeeper);
+}
