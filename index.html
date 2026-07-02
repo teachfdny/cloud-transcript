@@ -8,6 +8,65 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+
+<!-- AUTH SCREEN -->
+<div id="authScreen" class="auth-screen">
+  <div class="auth-card">
+    <h1 class="auth-title">Cloud Transcript</h1>
+    <p class="auth-subtitle">Sign in to access your transcript planner.</p>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-signin" onclick="showAuthTab('signin')">Sign In</button>
+      <button class="auth-tab" id="tab-magic" onclick="showAuthTab('magic')">Magic Link</button>
+    </div>
+
+    <!-- EMAIL/PASSWORD -->
+    <div id="auth-signin-form">
+      <div class="auth-field">
+        <label>Email</label>
+        <input type="email" id="auth-email" placeholder="you@example.com">
+      </div>
+      <div class="auth-field">
+        <label>Password</label>
+        <input type="password" id="auth-password" placeholder="••••••••">
+      </div>
+      <div id="auth-error" class="auth-error" style="display:none"></div>
+      <button class="btn btn-primary auth-btn" id="btn-signin">Sign In</button>
+      <button class="auth-link-btn" id="btn-forgot-password">Forgot password?</button>
+    </div>
+
+    <!-- MAGIC LINK -->
+    <div id="auth-magic-form" style="display:none">
+      <div class="auth-field">
+        <label>Email</label>
+        <input type="email" id="magic-email" placeholder="you@example.com">
+      </div>
+      <div id="magic-error" class="auth-error" style="display:none"></div>
+      <button class="btn btn-primary auth-btn" id="btn-magic-link">Send Magic Link</button>
+      <p class="auth-hint">We'll email you a link to sign in instantly — no password needed.</p>
+    </div>
+
+    <!-- MAGIC LINK SENT -->
+    <div id="auth-magic-sent" style="display:none">
+      <p class="auth-hint">✅ Magic link sent! Check your email and click the link to sign in.</p>
+      <button class="auth-link-btn" id="btn-back-to-signin">Back to sign in</button>
+    </div>
+
+    <!-- MAGIC LINK CONFIRM (when returning from email) -->
+    <div id="auth-magic-confirm" style="display:none">
+      <p class="auth-hint">Enter your email to complete sign in.</p>
+      <div class="auth-field">
+        <label>Email</label>
+        <input type="email" id="magic-confirm-email" placeholder="you@example.com">
+      </div>
+      <div id="magic-confirm-error" class="auth-error" style="display:none"></div>
+      <button class="btn btn-primary auth-btn" id="btn-magic-confirm">Complete Sign In</button>
+    </div>
+
+    <p class="auth-new-user">New user? <a href="https://keeper.ataleofchanges.com" target="_blank">Create an account in the Record Keeper.</a></p>
+  </div>
+</div>
+    
     <div class="container">
 
         <header>
