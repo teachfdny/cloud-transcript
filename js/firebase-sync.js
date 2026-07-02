@@ -49,13 +49,7 @@ function mapCourseType(gpaLevel) {
 // =====================
 let syncUser = null;
 
-onAuthStateChanged(auth, (user) => {
-  syncUser = user;
-  const btn = document.getElementById('importFromKeeper');
-  if (btn) {
-    btn.textContent = user ? 'Import from Record Keeper' : 'Import from Record Keeper (sign in required)';
-  }
-});
+
 
 // =====================
 // IMPORT FROM KEEPER
