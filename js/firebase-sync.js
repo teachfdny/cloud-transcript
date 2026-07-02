@@ -5,7 +5,7 @@
 
 import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js';
 import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js';
-import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js';
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyA6NwRZfx0vb_IZOJsJwIPkrN6efUgXBDI",
