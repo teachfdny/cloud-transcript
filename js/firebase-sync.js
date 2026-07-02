@@ -175,6 +175,12 @@ const btn = document.getElementById('importFromKeeper');
 if (btn) {
   btn.addEventListener('click', importFromKeeper);
 }
+document.getElementById('btn-signout').addEventListener('click', async () => {
+  if (confirm('Sign out?')) {
+    const { signOut } = await import('https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js');
+    await signOut(auth);
+  }
+});
 // =====================
 // AUTH FUNCTIONS
 // =====================
