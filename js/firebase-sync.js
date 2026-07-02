@@ -178,7 +178,6 @@ if (btn) {
 // =====================
 // AUTH FUNCTIONS
 // =====================
-import { signInWithEmailAndPassword, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js';
 
 function showAuthTab(tab) {
   document.getElementById('auth-signin-form').style.display = tab === 'signin' ? 'block' : 'none';
