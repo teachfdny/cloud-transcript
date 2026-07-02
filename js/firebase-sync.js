@@ -186,6 +186,7 @@ function showAuthTab(tab) {
   document.getElementById('tab-signin').classList.toggle('active', tab === 'signin');
   document.getElementById('tab-magic').classList.toggle('active', tab === 'magic');
 }
+window.showAuthTab = showAuthTab;
 
 function showAuthError(elementId, message) {
   const el = document.getElementById(elementId);
