@@ -156,6 +156,7 @@ async function importFromKeeper() {
   }));
 
   // Replace the year's courses
+  currentPlan.studentName = snapshot.childName;
   currentPlan.courses[targetYear] = mappedCourses;
 
   // Save to localStorage and refresh UI
