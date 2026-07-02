@@ -181,3 +181,167 @@ const btn = document.getElementById('importFromKeeper');
 if (btn) {
   btn.addEventListener('click', importFromKeeper);
 }
+// =====================
+// AUTH FUNCTIONS
+// =====================
+import { signInWithEmailAndPassword, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js';
+
+function showAuthTab(tab) {
+  document.getElementById('auth-signin-form').style.display = tab === 'signin' ? 'block' : 'none';
+  document.getElementById('auth-magic-form').style.display = tab === 'magic' ? 'block' : 'none';
+  document.getElementById('auth-magic-sent').style.display = 'none';
+  document.getElementById('tab-signin').classList.toggle('active', tab === 'signin');
+  document.getElementById('tab-magic').classList.toggle('active', tab === 'magic');
+}
+
+function showAuthError(elementId, message) {
+  const el = document.getElementById(elementId);
+  if (el) { el.textContent = message; el.style.display = 'block'; }
+}
+
+function hideAuthError(elementId) {
+  const el = document.getElementById(elementId);
+  if (el) el.style.display = 'none';
+}
+
+function getAuthErrorMessage(code) {
+  const messages = {
+    'auth/invalid-email': 'Please enter a valid email address.',
+    'auth/user-not-found': 'No account found with this email.',
+    'auth/wrong-password': 'Incorrect password.',
+    'auth/too-many-requests': 'Too many attempts. Please try again later.',
+    'auth/invalid-credential': 'Incorrect email or password.',
+  };
+  return messages[code] || 'Something went wrong. Please try again.';
+}
+
+function showMainApp() {
+  document.getElementById('authScreen').classList.add('hidden');
+}
+
+function showAuthScreen(form = 'signin') {
+  document.getElementById('authScreen').classList.remove('hidden');
+  showAuthTab(form);
+}
+
+// Check for magic link on load
+function checkMagicLink() {
+  if (isSignInWithEmailLink(auth, window.location.href)) {
+    const saved = localStorage.getItem('generatorEmailForSignIn');
+    if (saved) {
+      signInWithEmailLink(auth, saved, window.location.href)
+        .then(() => localStorage.removeItem('generatorEmailForSignIn'))
+        .catch(err => {
+          document.getElementById('auth-magic-confirm').style.display = 'block';
+          document.getElementById('auth-signin-form').style.display = 'none';
+          document.getElementById('auth-magic-form').style.display = 'none';
+        });
+    } else {
+      // Need to ask for email
+      document.getElementById('auth-magic-confirm').style.display = 'block';
+      document.getElementById('auth-signin-form').style.display = 'none';
+      document.getElementById('auth-magic-form').style.display = 'none';
+    }
+  }
+}
+
+// =====================
+// AUTH BUTTON LISTENERS
+// =====================
+document.getElementById('btn-signin').addEventListener('click', async () => {
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  hideAuthError('auth-error');
+
+  if (!email || !password) {
+    showAuthError('auth-error', 'Please enter your email and password.');
+    return;
+  }
+
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch (err) {
+    showAuthError('auth-error', getAuthErrorMessage(err.code));
+  }
+});
+
+document.getElementById('btn-magic-link').addEventListener('click', async () => {
+  const email = document.getElementById('magic-email').value.trim();
+  hideAuthError('magic-error');
+
+  if (!email) {
+    showAuthError('magic-error', 'Please enter your email address.');
+    return;
+  }
+
+  try {
+    await sendSignInLinkToEmail(auth, email, {
+      url: window.location.origin,
+      handleCodeInApp: true
+    });
+    localStorage.setItem('generatorEmailForSignIn', email);
+    document.getElementById('auth-magic-form').style.display = 'none';
+    document.getElementById('auth-magic-sent').style.display = 'block';
+  } catch (err) {
+    showAuthError('magic-error', getAuthErrorMessage(err.code));
+  }
+});
+
+document.getElementById('btn-magic-confirm').addEventListener('click', async () => {
+  const email = document.getElementById('magic-confirm-email').value.trim();
+  hideAuthError('magic-confirm-error');
+
+  if (!email) {
+    showAuthError('magic-confirm-error', 'Please enter your email address.');
+    return;
+  }
+
+  try {
+    await signInWithEmailLink(auth, email, window.location.href);
+    localStorage.removeItem('generatorEmailForSignIn');
+  } catch (err) {
+    showAuthError('magic-confirm-error', getAuthErrorMessage(err.code));
+  }
+});
+
+document.getElementById('btn-forgot-password').addEventListener('click', async () => {
+  const email = document.getElementById('auth-email').value.trim();
+  hideAuthError('auth-error');
+
+  if (!email) {
+    showAuthError('auth-error', 'Please enter your email address first.');
+    return;
+  }
+
+  try {
+    await sendPasswordResetEmail(auth, email);
+    showAuthError('auth-error', '✅ Password reset email sent. Check your inbox.');
+    document.getElementById('auth-error').style.background = '#f0fdf4';
+    document.getElementById('auth-error').style.borderColor = '#86efac';
+    document.getElementById('auth-error').style.color = '#166534';
+  } catch (err) {
+    showAuthError('auth-error', getAuthErrorMessage(err.code));
+  }
+});
+
+document.getElementById('btn-back-to-signin').addEventListener('click', () => {
+  showAuthTab('signin');
+});
+
+// =====================
+// UPDATE onAuthStateChanged
+// =====================
+// Replace the existing onAuthStateChanged block at the top of this file with this:
+onAuthStateChanged(auth, (user) => {
+  syncUser = user;
+  if (user) {
+    showMainApp();
+  } else {
+    checkMagicLink();
+    showAuthScreen();
+  }
+  const btn = document.getElementById('importFromKeeper');
+  if (btn) {
+    btn.textContent = 'Import from Record Keeper';
+  }
+});
