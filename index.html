@@ -271,6 +271,7 @@
         </section>
     </div>
 
+ 
     <!-- MODAL: ADD / EDIT COURSE -->
     <div id="courseModal" class="modal">
         <div class="modal-content">
@@ -312,6 +313,20 @@
                         <option value="Dual Enrollment">Dual Enrollment</option>
                     </select>
                 </div>
+                <div class="form-group">
+                    <label for="courseSubject">Subject:</label>
+                    <select id="courseSubject" required>
+                        <option value="">Select a subject</option>
+                        <option value="English/Language Arts">English/Language Arts</option>
+                        <option value="Math">Math</option>
+                        <option value="Science">Science</option>
+                        <option value="Social Studies/History">Social Studies/History</option>
+                        <option value="World Languages">World Languages</option>
+                        <option value="Arts/Music">Arts/Music</option>
+                        <option value="Physical Education/Health">Physical Education/Health</option>
+                        <option value="Elective">Elective</option>
+                    </select>
+                </div>
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary" id="courseSubmitBtn">Add Course</button>
                     <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
@@ -319,6 +334,7 @@
             </form>
         </div>
     </div>
+ 
 
     <!-- MODAL: ADD EXAM -->
     <div id="examModal" class="modal">
