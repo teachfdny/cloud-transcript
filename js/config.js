@@ -19,6 +19,17 @@ const CONFIG = {
     },
     // Course types
     COURSE_TYPES: ['Regular', 'Honors', 'AP', 'IB', 'Dual Enrollment'],
+    // Subject categories — used in course modal and Course Description Builder
+    SUBJECTS: [
+        'English/Language Arts',
+        'Math',
+        'Science',
+        'Social Studies/History',
+        'World Languages',
+        'Arts/Music',
+        'Physical Education/Health',
+        'Elective'
+    ],
     // School years — 8th through 12th
     YEARS: [
         { number: 8,  name: '8th Grade',  label: '8th Grade (Prior Credits)' },
@@ -30,7 +41,7 @@ const CONFIG = {
     // Graduation year range
     GRAD_YEAR_MIN: new Date().getFullYear() - 10,
     GRAD_YEAR_MAX: new Date().getFullYear() + 8,
-    // Storage key
+    // Storage key — kept for JSON export/import compatibility
     STORAGE_KEY: 'homeschoolhs_plan',
     // Default student
     DEFAULT_STUDENT: {
@@ -53,7 +64,7 @@ function formatGPA(gpa) {
     return isNaN(gpa) ? '0.00' : gpa.toFixed(2);
 }
 
-// Helper function to get current plan key — fixed key, not name-based
+// Helper function to get current plan key — kept for JSON export/import compatibility
 function getPlanKey() {
     return CONFIG.STORAGE_KEY;
 }
