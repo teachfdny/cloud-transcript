@@ -209,3 +209,22 @@ onAuthStateChanged(auth, async (user) => {
         window.transcriptId   = null;
     }
 });
+
+// =====================
+// OPEN COURSE DESCRIPTIONS
+// Opens descriptions.html in a new tab, passing the current transcript ID
+// as a query param so the builder loads the correct transcript.
+// Must be called after Firestore is ready (window.transcriptId is set).
+// =====================
+window.openDescriptions = function () {
+    if (!window.transcriptId) {
+        alert('Save your plan first before opening Course Descriptions.');
+        return;
+    }
+    window.open(`descriptions.html?tid=${window.transcriptId}`, '_blank');
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('btn-course-descriptions');
+    if (btn) btn.addEventListener('click', window.openDescriptions);
+});
