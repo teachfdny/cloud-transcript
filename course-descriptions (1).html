@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Course Descriptions · The Homeschool Toolbox</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="shortcut icon" href="/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-title" content="MyTranscript " />
+  <link rel="manifest" href="/site.webmanifest" />
+
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Nunito+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Tokens ── */
+    :root {
+      --navy:        #0F2942;
+      --navy-light:  #1a3a5c;
+      --coral:       #C23B5A;
+      --coral-tint:  #FBEAEE;
+      --cream:       #FAF8F4;
+      --ink:         #1C1C1E;
+      --muted:       #6B7280;
+      --border:      #E2DDD6;
+      --white:       #FFFFFF;
+      --done-bg:     #EDF7F5;
+      --done-border: #2E8C82;
+      --radius:      6px;
+      --sidebar-w:   260px;
+    }
+
+    /* ── Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'Nunito Sans', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    /* ── Top bar ── */
+    #topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: 56px;
+      background: var(--navy);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px;
+      border-bottom: 3px solid var(--coral);
+    }
+    #topbar-left { display: flex; flex-direction: column; gap: 1px; }
+    #topbar-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px; font-weight: 700;
+      color: var(--white);
+    }
+    #topbar-sub {
+      font-size: 12px; color: rgba(255,255,255,0.6);
+      font-family: 'Nunito Sans', sans-serif;
+    }
+    #topbar-actions { display: flex; align-items: center; gap: 10px; }
+
+    /* View toggle */
+    .view-toggle {
+      display: flex; border-radius: var(--radius); overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .view-toggle button {
+      padding: 7px 16px;
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 13px; font-weight: 600;
+      border: none; cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .view-toggle button.active {
+      background: var(--white); color: var(--navy);
+    }
+    .view-toggle button:not(.active) {
+      background: transparent; color: rgba(255,255,255,0.75);
+    }
+    .view-toggle button:not(.active):hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    #btn-export-pdf {
+      padding: 7px 16px;
+      background: var(--coral); color: var(--white);
+      border: none; border-radius: var(--radius);
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 13px; font-weight: 700;
+      cursor: pointer; letter-spacing: 0.02em;
+      transition: opacity 0.15s;
+    }
+    #btn-export-pdf:hover { opacity: 0.88; }
+
+    /* ── Layout shell ── */
+    #app {
+      display: flex;
+      padding-top: 56px;
+      height: 100vh;
+    }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      background: var(--white);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      display: flex; flex-direction: column;
+    }
+    #sidebar-header {
+      padding: 16px 16px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    #sidebar-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 13px; font-weight: 600;
+      color: var(--muted); text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    #course-list { flex: 1; padding: 8px 0; }
+
+    .course-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 11px 16px;
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      transition: background 0.12s, border-color 0.12s;
+      gap: 8px;
+    }
+    .course-item:hover { background: #F5F3EF; }
+    .course-item.active {
+      background: var(--coral-tint);
+      border-left-color: var(--coral);
+    }
+    .course-item-info { min-width: 0; }
+    .course-item-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 14px; font-weight: 600;
+      color: var(--navy);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .course-item.active .course-item-name { color: var(--coral); }
+    .course-item-year {
+      font-size: 12px; color: var(--muted);
+      margin-top: 2px;
+    }
+    .course-item-progress {
+      font-size: 12px; font-weight: 600;
+      color: var(--muted);
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .course-item.active .course-item-progress { color: var(--coral); }
+
+    /* ── Main panel ── */
+    #main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px 40px;
+      max-width: 860px;
+    }
+
+    /* Course editor header */
+    #editor-header { margin-bottom: 28px; }
+    #editor-course-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px; font-weight: 700;
+      color: var(--navy);
+    }
+    #editor-course-year {
+      font-size: 13px; color: var(--muted);
+      margin-top: 2px;
+    }
+    #editor-course-meta {
+      font-size: 13px; color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* Field blocks */
+    .field-block {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      margin-bottom: 16px;
+      transition: border-color 0.15s;
+    }
+    .field-block.is-done {
+      background: var(--done-bg);
+      border-color: var(--done-border);
+    }
+
+    .field-top {
+      display: flex; align-items: flex-start;
+      justify-content: space-between; gap: 12px;
+      margin-bottom: 6px;
+    }
+    .field-label {
+      font-size: 15px; font-weight: 700;
+      color: var(--navy);
+    }
+    .field-done-wrap {
+      display: flex; align-items: center; gap: 6px;
+      flex-shrink: 0;
+    }
+    .field-done-wrap label {
+      font-size: 13px; font-weight: 600;
+      color: var(--muted); cursor: pointer;
+    }
+    .field-done-wrap input[type="checkbox"] {
+      width: 16px; height: 16px;
+      accent-color: var(--coral);
+      cursor: pointer;
+    }
+    .field-hint {
+      font-size: 13px; color: var(--muted);
+      margin-bottom: 10px; line-height: 1.45;
+    }
+    .field-block textarea {
+      width: 100%;
+      min-height: 90px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 10px 12px;
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 14px; color: var(--ink);
+      background: var(--cream);
+      resize: vertical;
+      transition: border-color 0.15s;
+      line-height: 1.5;
+    }
+    .field-block textarea:focus {
+      outline: none;
+      border-color: var(--navy);
+    }
+    .field-block.is-done textarea {
+      background: var(--done-bg);
+      border-color: var(--done-border);
+    }
+    .field-block textarea:disabled {
+      opacity: 0.45; cursor: not-allowed; resize: none;
+    }
+
+    /* NA toggle */
+    .na-toggle-row {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 10px;
+    }
+    .na-toggle-row input[type="checkbox"] {
+      width: 15px; height: 15px;
+      accent-color: var(--muted);
+      cursor: pointer;
+    }
+    .na-toggle-row label {
+      font-size: 13px; color: var(--muted);
+      cursor: pointer; font-weight: 500;
+    }
+
+    /* Autosave indicator */
+    #save-status {
+      position: fixed; bottom: 20px; right: 24px;
+      font-size: 12px; color: var(--muted);
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 14px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    #save-status.visible { opacity: 1; }
+
+    /* Empty / loading states */
+    #loading-state, #empty-state, #access-denied {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      height: 60vh;
+      text-align: center; gap: 12px;
+    }
+    #loading-state p, #empty-state p, #access-denied p {
+      color: var(--muted); font-size: 15px;
+    }
+    #access-denied h2 {
+      font-family: 'Playfair Display', serif;
+      color: var(--navy); font-size: 22px;
+    }
+
+    /* ── Catalog Preview ── */
+    #preview-panel {
+      flex: 1; overflow-y: auto;
+      padding: 32px 40px;
+      display: none;
+    }
+
+    /* Print-only catalog header — hidden on screen */
+    #print-header { display: none; }
+
+    .preview-controls {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 28px;
+    }
+    .preview-controls span {
+      font-size: 13px; color: var(--muted); font-weight: 600;
+    }
+    .group-toggle {
+      display: flex; border-radius: var(--radius); overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .group-toggle button {
+      padding: 6px 14px;
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 13px; font-weight: 600;
+      border: none; cursor: pointer;
+      background: var(--white); color: var(--muted);
+      transition: background 0.15s, color 0.15s;
+    }
+    .group-toggle button.active {
+      background: var(--navy); color: var(--white);
+    }
+
+    /* ── Catalog output — grid layout ── */
+    #catalog-output {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 32px;
+    }
+    @media (max-width: 700px) {
+      #catalog-output { grid-template-columns: 1fr; }
+    }
+
+    .catalog-section-heading {
+      font-family: 'Playfair Display', serif;
+      font-size: 15px; font-weight: 700;
+      color: var(--navy);
+      border-bottom: 2px solid var(--navy);
+      padding-bottom: 4px;
+      margin-bottom: 14px;
+      grid-column: 1 / -1;
+    }
+
+    /* Two column containers inside each section */
+    .catalog-col {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .catalog-course {
+      padding-top: 10px;
+      margin-bottom: 4px;
+      border-top: 1px solid var(--border);
+    }
+    .catalog-course:first-child {
+      border-top: none;
+      padding-top: 0;
+    }
+
+    .catalog-course-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 13px; font-weight: 700;
+      color: var(--navy);
+    }
+    .catalog-course-meta {
+      font-size: 11px; color: var(--muted);
+      margin-bottom: 5px;
+    }
+    .catalog-field {
+      font-size: 12px; line-height: 1.55;
+      color: var(--ink); margin-bottom: 3px;
+    }
+    .catalog-field-label {
+      font-weight: 700; color: var(--coral);
+    }
+
+    /* ── Print styles ── */
+    @media print {
+      #topbar, #sidebar, #editor-panel, .preview-controls,
+      #save-status, #btn-export-pdf { display: none !important; }
+
+      #app { display: block; padding-top: 0; }
+
+      #preview-panel {
+        display: block !important;
+        padding: 0;
+        overflow: visible;
+      }
+
+      /* Show the print header */
+      #print-header {
+        display: block;
+        text-align: center;
+        margin-bottom: 24pt;
+        padding-bottom: 12pt;
+        border-bottom: 1.5pt solid var(--coral);
+      }
+      #print-header-school {
+        font-family: 'Playfair Display', serif;
+        font-size: 20pt;
+        font-weight: 700;
+        color: var(--navy);
+        margin-bottom: 4pt;
+      }
+      #print-header-sub {
+        font-family: 'Nunito Sans', sans-serif;
+        font-size: 10pt;
+        color: var(--muted);
+      }
+
+      body { background: white; font-size: 11pt; }
+
+      #catalog-output {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: 24pt;
+        width: 100%;
+      }
+
+      .catalog-section-heading { font-size: 13pt; }
+      .catalog-course-name { font-size: 11pt; }
+      .catalog-course-meta, .catalog-field { font-size: 9pt; }
+
+      /* Page numbers */
+      @page {
+        margin: 0.75in;
+        size: letter;
+        @bottom-center {
+          content: counter(page);
+          font-family: 'Nunito Sans', sans-serif;
+          font-size: 9pt;
+          color: #6B7280;
+        }
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div id="topbar">
+  <div id="topbar-left">
+    <span id="topbar-title">Course Descriptions</span>
+    <span id="topbar-sub">Loading…</span>
+  </div>
+  <div id="topbar-actions">
+    <div class="view-toggle">
+      <button id="btn-write" class="active" onclick="switchView('write')">Write</button>
+      <button id="btn-preview" onclick="switchView('preview')">Catalog preview</button>
+    </div>
+    <button id="btn-export-pdf" onclick="exportPDF()">Export PDF</button>
+  </div>
+</div>
+
+<div id="app">
+  <!-- Sidebar -->
+  <div id="sidebar">
+    <div id="sidebar-header"><h2>Courses</h2></div>
+    <div id="course-list"></div>
+  </div>
+
+  <!-- Write panel -->
+  <div id="editor-panel" style="flex:1;overflow-y:auto;padding:32px 40px;max-width:860px;">
+    <div id="loading-state"><p>Loading courses…</p></div>
+    <div id="editor-content" style="display:none;">
+      <div id="editor-header">
+        <div id="editor-course-name"></div>
+        <div id="editor-course-year"></div>
+        <div id="editor-course-meta"></div>
+      </div>
+      <div id="fields-container"></div>
+    </div>
+    <div id="access-denied" style="display:none;">
+      <h2>Generator access required</h2>
+      <p>Course Descriptions is a paid feature included with Transcript Generator access.</p>
+      <p style="margin-top:8px;"><a href="index.html" style="color:var(--coral);font-weight:600;">Back to generator</a></p>
+    </div>
+  </div>
+
+  <!-- Preview panel -->
+  <div id="preview-panel">
+    <!-- Print-only header — invisible on screen, visible on print -->
+    <div id="print-header">
+      <div id="print-header-school"></div>
+      <div id="print-header-sub"></div>
+    </div>
+    <div class="preview-controls">
+      <span>Group by</span>
+      <div class="group-toggle">
+        <button id="grp-year" class="active" onclick="setGrouping('year')">Year</button>
+        <button id="grp-subject" onclick="setGrouping('subject')">Subject</button>
+      </div>
+    </div>
+    <div id="catalog-output"></div>
+  </div>
+</div>
+
+<div id="save-status">Saved</div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, collection, doc, getDocs, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA6NwRZfx0vb_IZOJsJwIPkrN6efUgXBDI",
+  authDomain: "ataleofchanges-homeschool.firebaseapp.com",
+  projectId: "ataleofchanges-homeschool",
+  storageBucket: "ataleofchanges-homeschool.firebasestorage.app",
+  messagingSenderId: "192724354270",
+  appId: "1:192724354270:web:93973ba3913dbdff8b6e4f"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// ── State ──
+let currentTranscriptId = null;
+let currentUid = null;
+let gradYear = null;
+let studentName = '';
+let schoolName = '';
+let courses = [];
+let descriptions = {};
+let activeCourseId = null;
+let saveTimer = null;
+let grouping = 'year';
+
+// Field definitions
+const FIELD_DEFS = [
+  { key: 'shortDescription',   label: 'Short description',   hint: '2–4 sentences on what the course covered and the approach you took. Example: "A survey of British literature from the medieval period through the 20th century, with emphasis on close reading and analytical writing."', placeholder: 'Short description…' },
+  { key: 'majorProjects',      label: 'Major projects',      hint: 'Larger assignments, not routine homework. Example: research paper, science fair project, capstone presentation, portfolio.', placeholder: 'Major projects…', hasNA: true },
+  { key: 'resourcesUsed',      label: 'Resources used',      hint: 'Textbooks, curricula, websites, videos, or other materials used throughout the course.', placeholder: 'Resources used…' },
+  { key: 'labs',               label: 'Labs',                hint: 'Hands-on laboratory work completed. Include type and approximate count.', placeholder: 'Labs completed…', scienceOnly: true },
+  { key: 'assessmentCriteria', label: 'Assessment criteria', hint: 'How the student was evaluated — tests, projects, essays, portfolios, oral exams, etc.', placeholder: 'Assessment criteria…' },
+];
+
+const SCIENCE_SUBJECTS = ['Science'];
+
+function isScience(course) {
+  return course && SCIENCE_SUBJECTS.includes(course.subject);
+}
+
+function getFieldDefs(course) {
+  return FIELD_DEFS.filter(f => !f.scienceOnly || isScience(course));
+}
+
+function getDenominator(courseId) {
+  const course = courses.find(c => c.id === courseId);
+  const defs = getFieldDefs(course);
+  const desc = descriptions[courseId] || {};
+  return defs.filter(f => !f.hasNA || !desc.naFlags?.[f.key]).length;
+}
+
+function getNumerator(courseId) {
+  const desc = descriptions[courseId] || {};
+  const course = courses.find(c => c.id === courseId);
+  const defs = getFieldDefs(course);
+  return defs.filter(f => {
+    if (f.hasNA && desc.naFlags?.[f.key]) return false;
+    return !!desc.done?.[f.key];
+  }).length;
+}
+
+// ── Auth ──
+onAuthStateChanged(auth, async (user) => {
+  if (!user) { window.location.href = 'index.html'; return; }
+  const token = await user.getIdTokenResult();
+  if (!token.claims.generator) {
+    document.getElementById('loading-state').style.display = 'none';
+    document.getElementById('access-denied').style.display = 'flex';
+    return;
+  }
+  currentUid = user.uid;
+  await loadTranscript(user.uid);
+});
+
+// ── Load transcript ──
+async function loadTranscript(uid) {
+  const params = new URLSearchParams(window.location.search);
+  const tidParam = params.get('tid');
+
+  let transcriptDoc, transcriptData;
+
+  if (tidParam) {
+    const ref = doc(db, 'users', uid, 'transcripts', tidParam);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) {
+      document.getElementById('loading-state').innerHTML = '<p>Transcript not found. <a href="index.html" style="color:var(--coral);font-weight:600;">Back to generator.</a></p>';
+      return;
+    }
+    transcriptDoc = snap;
+    transcriptData = snap.data();
+  } else {
+    const transcriptsSnap = await getDocs(collection(db, 'users', uid, 'transcripts'));
+    if (transcriptsSnap.empty) {
+      document.getElementById('loading-state').innerHTML = '<p>No transcript found. <a href="index.html" style="color:var(--coral);font-weight:600;">Create one in the generator.</a></p>';
+      return;
+    }
+    transcriptDoc = transcriptsSnap.docs[0];
+    transcriptData = transcriptDoc.data();
+  }
+
+  currentTranscriptId = transcriptDoc.id;
+
+  studentName = transcriptData.studentName || transcriptData.name || '';
+  schoolName  = transcriptData.schoolName  || transcriptData.school || '';
+
+  document.getElementById('topbar-sub').textContent = studentName ? `${studentName} · attached to transcript` : 'Attached to transcript';
+  document.getElementById('print-header-school').textContent = schoolName || 'Course Catalog';
+  document.getElementById('print-header-sub').textContent = ['Course catalog', studentName].filter(Boolean).join(' · ');
+
+  gradYear = parseInt(transcriptData.graduationYear) || new Date().getFullYear();
+
+  const coursesSnap = await getDocs(collection(db, 'users', uid, 'transcripts', currentTranscriptId, 'courses'));
+  courses = coursesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+  courses.sort((a, b) => {
+    const yr = Number(a.year || 0) - Number(b.year || 0);
+    if (yr !== 0) return yr;
+    return (a.name || '').localeCompare(b.name || '');
+  });
+
+  const descSnap = await getDocs(collection(db, 'users', uid, 'transcripts', currentTranscriptId, 'descriptions'));
+  descSnap.forEach(d => { descriptions[d.id] = d.data(); });
+
+  renderSidebar();
+  document.getElementById('loading-state').style.display = 'none';
+
+  if (courses.length > 0) selectCourse(courses[0].id);
+}
+
+// ── Sidebar ──
+function renderSidebar() {
+  const list = document.getElementById('course-list');
+  list.innerHTML = '';
+  courses.forEach(course => {
+    const num = getNumerator(course.id);
+    const den = getDenominator(course.id);
+    const item = document.createElement('div');
+    item.className = 'course-item' + (course.id === activeCourseId ? ' active' : '');
+    item.dataset.id = course.id;
+    item.innerHTML = `
+      <div class="course-item-info">
+        <div class="course-item-name">${course.name || 'Untitled'}</div>
+        <div class="course-item-year">${course.subject || ''}</div>
+      </div>
+      <div class="course-item-progress">${num}/${den}</div>
+    `;
+    item.addEventListener('click', () => selectCourse(course.id));
+    list.appendChild(item);
+  });
+}
+
+// ── Select course ──
+function selectCourse(courseId) {
+  activeCourseId = courseId;
+  const course = courses.find(c => c.id === courseId);
+  if (!course) return;
+
+  document.querySelectorAll('.course-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.id === courseId);
+  });
+
+  document.getElementById('editor-course-name').textContent = course.name || 'Untitled';
+  document.getElementById('editor-course-year').textContent = course.subject || '';
+
+  // Grade removed — show academic year and credits only
+  const ayLabel     = academicYear(course.year);
+  const creditLabel = course.credits ? `${course.credits} credit${Number(course.credits) !== 1 ? 's' : ''}` : '';
+  const metaStr     = [ayLabel, creditLabel].filter(Boolean).join(' · ');
+  document.getElementById('editor-course-meta').textContent = metaStr;
+
+  renderFields(course);
+  document.getElementById('editor-content').style.display = 'block';
+}
+
+function academicYear(gradeLevel) {
+  if (!gradeLevel || !gradYear) return '';
+  const gradeOffset = { 8: 5, 9: 4, 10: 3, 11: 2, 12: 1 };
+  const offset = gradeOffset[Number(gradeLevel)] ?? 0;
+  const sy = gradYear - offset;
+  return `${sy} – ${sy + 1}`;
+}
+
+// ── Render fields ──
+function renderFields(course) {
+  const container = document.getElementById('fields-container');
+  container.innerHTML = '';
+  const desc = descriptions[course.id] || {};
+  const defs = getFieldDefs(course);
+
+  defs.forEach(field => {
+    const isDone = !!desc.done?.[field.key];
+    const isNA   = field.hasNA && !!desc.naFlags?.[field.key];
+    const value  = desc.fields?.[field.key] || '';
+
+    const block = document.createElement('div');
+    block.className = 'field-block' + (isDone ? ' is-done' : '');
+    block.dataset.fieldKey = field.key;
+
+    block.innerHTML = `
+      <div class="field-top">
+        <span class="field-label">${field.label}</span>
+        <div class="field-done-wrap">
+          <input type="checkbox" id="done-${field.key}" ${isDone ? 'checked' : ''} />
+          <label for="done-${field.key}">Done</label>
+        </div>
+      </div>
+      <div class="field-hint">${field.hint}</div>
+      ${field.hasNA ? `
+        <div class="na-toggle-row">
+          <input type="checkbox" id="na-${field.key}" ${isNA ? 'checked' : ''} />
+          <label for="na-${field.key}">No major project for this course</label>
+        </div>
+      ` : ''}
+      <textarea id="ta-${field.key}" placeholder="${field.placeholder}" ${isNA ? 'disabled' : ''}>${value}</textarea>
+    `;
+
+    const doneCheck = block.querySelector(`#done-${field.key}`);
+    const textarea  = block.querySelector(`#ta-${field.key}`);
+
+    doneCheck.addEventListener('change', () => {
+      block.classList.toggle('is-done', doneCheck.checked);
+      saveDescription(course.id);
+      updateSidebarItem(course.id);
+    });
+
+    textarea.addEventListener('input', () => {
+      if (doneCheck.checked) {
+        doneCheck.checked = false;
+        block.classList.remove('is-done');
+      }
+      scheduleSave(course.id);
+    });
+
+    if (field.hasNA) {
+      const naCheck = block.querySelector(`#na-${field.key}`);
+      naCheck.addEventListener('change', () => {
+        textarea.disabled = naCheck.checked;
+        if (naCheck.checked) {
+          doneCheck.checked = false;
+          block.classList.remove('is-done');
+        }
+        saveDescription(course.id);
+        updateSidebarItem(course.id);
+      });
+    }
+
+    container.appendChild(block);
+  });
+}
+
+// ── Save ──
+function scheduleSave(courseId) {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => saveDescription(courseId), 1000);
+}
+
+async function saveDescription(courseId) {
+  const course = courses.find(c => c.id === courseId);
+  const defs = getFieldDefs(course);
+  const data = { fields: {}, done: {}, naFlags: {} };
+
+  defs.forEach(field => {
+    const ta   = document.getElementById(`ta-${field.key}`);
+    const done = document.getElementById(`done-${field.key}`);
+    const naEl = document.getElementById(`na-${field.key}`);
+    if (ta)   data.fields[field.key]   = ta.value;
+    if (done) data.done[field.key]     = done.checked;
+    if (naEl) data.naFlags[field.key]  = naEl.checked;
+  });
+
+  descriptions[courseId] = data;
+  updateSidebarItem(courseId);
+
+  try {
+    await setDoc(
+      doc(db, 'users', currentUid, 'transcripts', currentTranscriptId, 'descriptions', courseId),
+      data,
+      { merge: true }
+    );
+    showSaveStatus('Saved');
+  } catch (e) {
+    showSaveStatus('Save failed');
+    console.error(e);
+  }
+}
+
+function updateSidebarItem(courseId) {
+  const item = document.querySelector(`.course-item[data-id="${courseId}"]`);
+  if (!item) return;
+  const num  = getNumerator(courseId);
+  const den  = getDenominator(courseId);
+  const prog = item.querySelector('.course-item-progress');
+  if (prog) prog.textContent = `${num}/${den}`;
+}
+
+function showSaveStatus(msg) {
+  const el = document.getElementById('save-status');
+  el.textContent = msg;
+  el.classList.add('visible');
+  setTimeout(() => el.classList.remove('visible'), 2000);
+}
+
+// ── View switching ──
+window.switchView = function(view) {
+  const editorPanel  = document.getElementById('editor-panel');
+  const previewPanel = document.getElementById('preview-panel');
+  const sidebar      = document.getElementById('sidebar');
+  document.getElementById('btn-write').classList.toggle('active', view === 'write');
+  document.getElementById('btn-preview').classList.toggle('active', view === 'preview');
+
+  if (view === 'write') {
+    editorPanel.style.display = '';
+    sidebar.style.display = '';
+    previewPanel.style.display = 'none';
+  } else {
+    editorPanel.style.display = 'none';
+    sidebar.style.display = 'none';
+    previewPanel.style.display = 'block';
+    renderCatalog();
+  }
+};
+
+// ── Grouping ──
+window.setGrouping = function(g) {
+  grouping = g;
+  document.getElementById('grp-year').classList.toggle('active', g === 'year');
+  document.getElementById('grp-subject').classList.toggle('active', g === 'subject');
+  renderCatalog();
+};
+
+// ── Estimate course entry height for bin-packing ──
+// Rough character count across all filled fields as a proxy for rendered height.
+function estimateCourseHeight(course) {
+  const desc = descriptions[course.id] || {};
+  const defs = getFieldDefs(course);
+  let chars = (course.name || '').length + 40; // name + meta line
+  defs.forEach(field => {
+    const isNA  = field.hasNA && !!desc.naFlags?.[field.key];
+    const value = desc.fields?.[field.key] || '';
+    if (!isNA && value.trim()) chars += field.label.length + value.length + 10;
+  });
+  return chars;
+}
+
+// ── Catalog render ──
+function renderCatalog() {
+  const output = document.getElementById('catalog-output');
+  output.innerHTML = '';
+
+  // Group courses
+  const groups = {};
+  courses.forEach(course => {
+    const key = grouping === 'year'
+      ? (academicYear(course.year) || 'Unknown Year')
+      : (course.subject || 'Elective');
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(course);
+  });
+
+  const sortedKeys = Object.keys(groups).sort((a, b) =>
+    grouping === 'year' ? b.localeCompare(a) : a.localeCompare(b)
+  );
+
+  sortedKeys.forEach(groupKey => {
+    // Section heading spans both columns
+    const heading = document.createElement('div');
+    heading.className = 'catalog-section-heading';
+    heading.textContent = groupKey;
+    output.appendChild(heading);
+
+    // Bin-pack courses into two columns by estimated height
+    const groupCourses = groups[groupKey];
+    const colA = [];
+    const colB = [];
+    let heightA = 0;
+    let heightB = 0;
+
+    groupCourses.forEach(course => {
+      const h = estimateCourseHeight(course);
+      if (heightA <= heightB) {
+        colA.push(course);
+        heightA += h;
+      } else {
+        colB.push(course);
+        heightB += h;
+      }
+    });
+
+    // Render each column
+    [colA, colB].forEach(col => {
+      const colEl = document.createElement('div');
+      colEl.className = 'catalog-col';
+
+      col.forEach(course => {
+        const desc = descriptions[course.id] || {};
+        const defs = getFieldDefs(course);
+        const el   = document.createElement('div');
+        el.className = 'catalog-course';
+
+        // Grade removed — academic year and credits only
+        const ayLabel     = academicYear(course.year);
+        const creditLabel = course.credits ? `${course.credits} credit${Number(course.credits) !== 1 ? 's' : ''}` : '';
+        const metaParts   = [ayLabel, creditLabel].filter(Boolean);
+
+        let html = `
+          <div class="catalog-course-name">${course.name || 'Untitled'}</div>
+          <div class="catalog-course-meta">${metaParts.join(' · ')}</div>
+        `;
+
+        defs.forEach(field => {
+          const isNA  = field.hasNA && !!desc.naFlags?.[field.key];
+          const value = desc.fields?.[field.key] || '';
+          if (!isNA && value.trim()) {
+            html += `<div class="catalog-field"><span class="catalog-field-label">${field.label}: </span>${value}</div>`;
+          }
+        });
+
+        el.innerHTML = html;
+        colEl.appendChild(el);
+      });
+
+      output.appendChild(colEl);
+    });
+  });
+}
+
+// ── PDF export ──
+window.exportPDF = function() {
+  switchView('preview');
+  setTimeout(() => window.print(), 300);
+};
+
+</script>
+</body>
+</html>
