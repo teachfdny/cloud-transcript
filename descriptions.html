@@ -299,9 +299,7 @@
     }
 
     /* Print-only catalog header — hidden on screen */
-    #print-header {
-      display: none;
-    }
+    #print-header { display: none; }
 
     .preview-controls {
       display: flex; align-items: center; gap: 10px;
@@ -326,9 +324,15 @@
       background: var(--navy); color: var(--white);
     }
 
-    /* Catalog output */
-    #catalog-output { column-count: 2; column-gap: 32px; }
-    @media (max-width: 700px) { #catalog-output { column-count: 1; } }
+    /* ── Catalog output — grid layout ── */
+    #catalog-output {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 32px;
+    }
+    @media (max-width: 700px) {
+      #catalog-output { grid-template-columns: 1fr; }
+    }
 
     .catalog-section-heading {
       font-family: 'Playfair Display', serif;
@@ -336,15 +340,26 @@
       color: var(--navy);
       border-bottom: 2px solid var(--navy);
       padding-bottom: 4px;
-      margin-bottom: 12px;
-      break-after: avoid;
-      column-span: all;
+      margin-bottom: 14px;
+      grid-column: 1 / -1;
+    }
+
+    /* Two column containers inside each section */
+    .catalog-col {
+      display: flex;
+      flex-direction: column;
     }
 
     .catalog-course {
-      break-inside: avoid;
-      margin-bottom: 18px;
+      padding-top: 10px;
+      margin-bottom: 4px;
+      border-top: 1px solid var(--border);
     }
+    .catalog-course:first-child {
+      border-top: none;
+      padding-top: 0;
+    }
+
     .catalog-course-name {
       font-family: 'Playfair Display', serif;
       font-size: 13px; font-weight: 700;
@@ -399,7 +414,8 @@
       body { background: white; font-size: 11pt; }
 
       #catalog-output {
-        column-count: 2;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
         column-gap: 24pt;
         width: 100%;
       }
@@ -408,7 +424,17 @@
       .catalog-course-name { font-size: 11pt; }
       .catalog-course-meta, .catalog-field { font-size: 9pt; }
 
-      @page { margin: 0.75in; size: letter; }
+      /* Page numbers */
+      @page {
+        margin: 0.75in;
+        size: letter;
+        @bottom-center {
+          content: counter(page);
+          font-family: 'Nunito Sans', sans-serif;
+          font-size: 9pt;
+          color: #6B7280;
+        }
+      }
     }
   </style>
 </head>
@@ -478,7 +504,7 @@
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, collection, doc, getDocs, getDoc, setDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getFirestore, collection, doc, getDocs, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyA6NwRZfx0vb_IZOJsJwIPkrN6efUgXBDI",
@@ -507,10 +533,10 @@ let grouping = 'year';
 
 // Field definitions
 const FIELD_DEFS = [
-  { key: 'shortDescription', label: 'Short description', hint: '2–4 sentences on what the course covered and the approach you took. Example: "A survey of British literature from the medieval period through the 20th century, with emphasis on close reading and analytical writing."', placeholder: 'Short description…' },
-  { key: 'majorProjects',    label: 'Major projects',    hint: 'Larger assignments, not routine homework. Example: research paper, science fair project, capstone presentation, portfolio.', placeholder: 'Major projects…', hasNA: true },
-  { key: 'resourcesUsed',    label: 'Resources used',    hint: 'Textbooks, curricula, websites, videos, or other materials used throughout the course.', placeholder: 'Resources used…' },
-  { key: 'labs',             label: 'Labs',              hint: 'Hands-on laboratory work completed. Include type and approximate count.', placeholder: 'Labs completed…', scienceOnly: true },
+  { key: 'shortDescription',   label: 'Short description',   hint: '2–4 sentences on what the course covered and the approach you took. Example: "A survey of British literature from the medieval period through the 20th century, with emphasis on close reading and analytical writing."', placeholder: 'Short description…' },
+  { key: 'majorProjects',      label: 'Major projects',      hint: 'Larger assignments, not routine homework. Example: research paper, science fair project, capstone presentation, portfolio.', placeholder: 'Major projects…', hasNA: true },
+  { key: 'resourcesUsed',      label: 'Resources used',      hint: 'Textbooks, curricula, websites, videos, or other materials used throughout the course.', placeholder: 'Resources used…' },
+  { key: 'labs',               label: 'Labs',                hint: 'Hands-on laboratory work completed. Include type and approximate count.', placeholder: 'Labs completed…', scienceOnly: true },
   { key: 'assessmentCriteria', label: 'Assessment criteria', hint: 'How the student was evaluated — tests, projects, essays, portfolios, oral exams, etc.', placeholder: 'Assessment criteria…' },
 ];
 
@@ -544,14 +570,12 @@ function getNumerator(courseId) {
 // ── Auth ──
 onAuthStateChanged(auth, async (user) => {
   if (!user) { window.location.href = 'index.html'; return; }
-
   const token = await user.getIdTokenResult();
   if (!token.claims.generator) {
     document.getElementById('loading-state').style.display = 'none';
     document.getElementById('access-denied').style.display = 'flex';
     return;
   }
-
   currentUid = user.uid;
   await loadTranscript(user.uid);
 });
@@ -584,17 +608,12 @@ async function loadTranscript(uid) {
 
   currentTranscriptId = transcriptDoc.id;
 
-  // Capture student and school name for print header
   studentName = transcriptData.studentName || transcriptData.name || '';
   schoolName  = transcriptData.schoolName  || transcriptData.school || '';
 
-  // Topbar subtitle
   document.getElementById('topbar-sub').textContent = studentName ? `${studentName} · attached to transcript` : 'Attached to transcript';
-
-  // Populate print header (hidden on screen, shown on print)
   document.getElementById('print-header-school').textContent = schoolName || 'Course Catalog';
-  document.getElementById('print-header-sub').textContent =
-    ['Course catalog', studentName].filter(Boolean).join(' · ');
+  document.getElementById('print-header-sub').textContent = ['Course catalog', studentName].filter(Boolean).join(' · ');
 
   gradYear = parseInt(transcriptData.graduationYear) || new Date().getFullYear();
 
@@ -612,9 +631,7 @@ async function loadTranscript(uid) {
   renderSidebar();
   document.getElementById('loading-state').style.display = 'none';
 
-  if (courses.length > 0) {
-    selectCourse(courses[0].id);
-  }
+  if (courses.length > 0) selectCourse(courses[0].id);
 }
 
 // ── Sidebar ──
@@ -651,10 +668,11 @@ function selectCourse(courseId) {
 
   document.getElementById('editor-course-name').textContent = course.name || 'Untitled';
   document.getElementById('editor-course-year').textContent = course.subject || '';
-  const ayLabel = academicYear(course.year);
+
+  // Grade removed — show academic year and credits only
+  const ayLabel     = academicYear(course.year);
   const creditLabel = course.credits ? `${course.credits} credit${Number(course.credits) !== 1 ? 's' : ''}` : '';
-  const letterGrade = course.grade || '';
-  const metaStr = [ayLabel, creditLabel, letterGrade].filter(Boolean).join(' · ');
+  const metaStr     = [ayLabel, creditLabel].filter(Boolean).join(' · ');
   document.getElementById('editor-course-meta').textContent = metaStr;
 
   renderFields(course);
@@ -749,12 +767,12 @@ async function saveDescription(courseId) {
   const data = { fields: {}, done: {}, naFlags: {} };
 
   defs.forEach(field => {
-    const ta    = document.getElementById(`ta-${field.key}`);
-    const done  = document.getElementById(`done-${field.key}`);
-    const naEl  = document.getElementById(`na-${field.key}`);
-    if (ta)   data.fields[field.key] = ta.value;
-    if (done) data.done[field.key]   = done.checked;
-    if (naEl) data.naFlags[field.key] = naEl.checked;
+    const ta   = document.getElementById(`ta-${field.key}`);
+    const done = document.getElementById(`done-${field.key}`);
+    const naEl = document.getElementById(`na-${field.key}`);
+    if (ta)   data.fields[field.key]   = ta.value;
+    if (done) data.done[field.key]     = done.checked;
+    if (naEl) data.naFlags[field.key]  = naEl.checked;
   });
 
   descriptions[courseId] = data;
@@ -776,8 +794,8 @@ async function saveDescription(courseId) {
 function updateSidebarItem(courseId) {
   const item = document.querySelector(`.course-item[data-id="${courseId}"]`);
   if (!item) return;
-  const num = getNumerator(courseId);
-  const den = getDenominator(courseId);
+  const num  = getNumerator(courseId);
+  const den  = getDenominator(courseId);
   const prog = item.querySelector('.course-item-progress');
   if (prog) prog.textContent = `${num}/${den}`;
 }
@@ -817,59 +835,98 @@ window.setGrouping = function(g) {
   renderCatalog();
 };
 
+// ── Estimate course entry height for bin-packing ──
+// Rough character count across all filled fields as a proxy for rendered height.
+function estimateCourseHeight(course) {
+  const desc = descriptions[course.id] || {};
+  const defs = getFieldDefs(course);
+  let chars = (course.name || '').length + 40; // name + meta line
+  defs.forEach(field => {
+    const isNA  = field.hasNA && !!desc.naFlags?.[field.key];
+    const value = desc.fields?.[field.key] || '';
+    if (!isNA && value.trim()) chars += field.label.length + value.length + 10;
+  });
+  return chars;
+}
+
 // ── Catalog render ──
 function renderCatalog() {
   const output = document.getElementById('catalog-output');
   output.innerHTML = '';
 
+  // Group courses
   const groups = {};
   courses.forEach(course => {
-    let key;
-    if (grouping === 'year') {
-      key = academicYear(course.year) || 'Unknown Year';
-    } else {
-      key = course.subject || 'Elective';
-    }
+    const key = grouping === 'year'
+      ? (academicYear(course.year) || 'Unknown Year')
+      : (course.subject || 'Elective');
     if (!groups[key]) groups[key] = [];
     groups[key].push(course);
   });
 
-  const sortedKeys = Object.keys(groups).sort((a, b) => {
-    return grouping === 'year' ? b.localeCompare(a) : a.localeCompare(b);
-  });
+  const sortedKeys = Object.keys(groups).sort((a, b) =>
+    grouping === 'year' ? b.localeCompare(a) : a.localeCompare(b)
+  );
 
   sortedKeys.forEach(groupKey => {
+    // Section heading spans both columns
     const heading = document.createElement('div');
     heading.className = 'catalog-section-heading';
     heading.textContent = groupKey;
     output.appendChild(heading);
 
-    groups[groupKey].forEach(course => {
-      const desc = descriptions[course.id] || {};
-      const defs = getFieldDefs(course);
-      const el = document.createElement('div');
-      el.className = 'catalog-course';
+    // Bin-pack courses into two columns by estimated height
+    const groupCourses = groups[groupKey];
+    const colA = [];
+    const colB = [];
+    let heightA = 0;
+    let heightB = 0;
 
-      const ayLabel = academicYear(course.year);
-      const creditLabel = course.credits ? `${course.credits} credit${Number(course.credits) !== 1 ? 's' : ''}` : '';
-      const letterGrade = course.grade || '';
-      const metaParts = [ayLabel, creditLabel, letterGrade].filter(Boolean);
+    groupCourses.forEach(course => {
+      const h = estimateCourseHeight(course);
+      if (heightA <= heightB) {
+        colA.push(course);
+        heightA += h;
+      } else {
+        colB.push(course);
+        heightB += h;
+      }
+    });
 
-      let html = `
-        <div class="catalog-course-name">${course.name || 'Untitled'}</div>
-        <div class="catalog-course-meta">${metaParts.join(' · ')}</div>
-      `;
+    // Render each column
+    [colA, colB].forEach(col => {
+      const colEl = document.createElement('div');
+      colEl.className = 'catalog-col';
 
-      defs.forEach(field => {
-        const isNA  = field.hasNA && !!desc.naFlags?.[field.key];
-        const value = desc.fields?.[field.key] || '';
-        if (!isNA && value.trim()) {
-          html += `<div class="catalog-field"><span class="catalog-field-label">${field.label}: </span>${value}</div>`;
-        }
+      col.forEach(course => {
+        const desc = descriptions[course.id] || {};
+        const defs = getFieldDefs(course);
+        const el   = document.createElement('div');
+        el.className = 'catalog-course';
+
+        // Grade removed — academic year and credits only
+        const ayLabel     = academicYear(course.year);
+        const creditLabel = course.credits ? `${course.credits} credit${Number(course.credits) !== 1 ? 's' : ''}` : '';
+        const metaParts   = [ayLabel, creditLabel].filter(Boolean);
+
+        let html = `
+          <div class="catalog-course-name">${course.name || 'Untitled'}</div>
+          <div class="catalog-course-meta">${metaParts.join(' · ')}</div>
+        `;
+
+        defs.forEach(field => {
+          const isNA  = field.hasNA && !!desc.naFlags?.[field.key];
+          const value = desc.fields?.[field.key] || '';
+          if (!isNA && value.trim()) {
+            html += `<div class="catalog-field"><span class="catalog-field-label">${field.label}: </span>${value}</div>`;
+          }
+        });
+
+        el.innerHTML = html;
+        colEl.appendChild(el);
       });
 
-      el.innerHTML = html;
-      output.appendChild(el);
+      output.appendChild(colEl);
     });
   });
 }
