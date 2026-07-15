@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img">
-  <title>Cloud Transcript Generator</title>
-  <!-- cloud body -->
-  <path d="M78 62c7.5-1.5 13-8 13-16 0-9-7-16-16-16-1 0-2 .1-3 .3C69 22 60.5 15 50 15c-12 0-21.5 9-22 20.5C21 36 15 42.5 15 50.5c0 8.5 6.5 15 15 15h48z" fill="#2E8C82"/>
-  <!-- TG letters -->
-  <text x="50" y="57" text-anchor="middle" font-family="'Georgia', serif" font-weight="700" font-size="26" fill="white">TG</text>
-</svg>
